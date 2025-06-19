@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animated Birthday Website</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #000;
+            color: white;
+            overflow: hidden;
+        }
+
+        .page {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            visibility: hidden;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .page.active {
+            visibility: visible;
+            opacity: 1;
+            pointer-events: auto;
+            z-index: 100;
+        }
+
+        /* Landing Page Styles */
+        .landing-page {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            background: #000;
+        }
+
+        .background-particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: white;
+            border-radius: 50%;
+            opacity: 0.3;
+            animation: twinkle 3s infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.5); }
+        }
+
+        .title-container {
+            text-align: center;
+            margin-bottom: 3rem;
+            z-index: 10;
+            position: relative;
+        }
+
+        .title-line {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .title-line:last-child {
+            margin-bottom: 0;
+        }
+
+        .letter {
+            font-size: 6rem;
+            font-weight: bold;
+            margin: 0 0.25rem;
+            opacity: 0;
+            transition: all 0.2s ease-in-out;
+            text-shadow: 0 0 10px rgba(255,255,255,0.2);
+            color: #000;
+        }
+
+        .letter.lit {
+            opacity: 1;
+            transform: scale(1.1);
+            text-shadow: 0 0 40px rgba(255,255,255,0.8), 0 0 80px rgba(255,255,255,0.4);
+            color: white;
+        }
+
+        .letter.dimming {
+            opacity: 0.4;
+            color: white;
+        }
+
+        .letter.next {
+            opacity: 0.2;
+            color: white;
+        }
+
+        .message {
+            font-size: 1.25rem;
+            margin-bottom: 2rem;
+            opacity: 1;
+            z-index: 10;
+            position: relative;
+        }
+
+        .open-button {
+            background: linear-gradient(45deg, #3b82f6, #8b5cf6);
+            border: none;
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            font-size: 1.125rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            opacity: 1;
+            z-index: 10;
+            position: relative;
+        }
+
+        .open-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+        }
+
+        .sparkles-icon {
+            display: inline-block;
+            margin-right: 0.5rem;
+        }
+
+        /* Heart Game Styles */
+        .heart-game {
+            background: linear-gradient(135deg, #fce7f3, #fdf2f8);
+            overflow: hidden;
+        }
+
+        .game-ui {
+            position: relative;
+            z-index: 10;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .game-title {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #374151;
+            margin-bottom: 1rem;
+        }
+
+        .game-subtitle {
+            font-size: 1.125rem;
+            color: #4b5563;
+            margin-bottom: 1rem;
+        }
+
+        .progress-container {
+            width: 16rem;
+            margin: 0 auto 1rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 0.75rem;
+            background: #d1d5db;
+            border-radius: 9999px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #ef4444;
+            border-radius: 9999px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
+        .hearts-counter {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .congratulations {
+            margin-top: 3rem;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+        }
+
+        .congratulations.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .congrats-title {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #dc2626;
+            margin-bottom: 1rem;
+        }
+
+        .countdown-circle {
+            width: 3rem;
+            height: 1.5rem;
+            background: #4b5563;
+            border-radius: 50%;
+            opacity: 0.3;
+            filter: blur(2px);
+            margin: 2rem auto;
+        }
+
+        .heart {
+            position: absolute;
+            font-size: 2.5rem;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            z-index: 50;
+            user-select: none;
+        }
+
+        .heart:hover {
+            transform: scale(1.1);
+        }
+
+        .background-dots {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .dot {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #9ca3af;
+            border-radius: 50%;
+            opacity: 0.4;
+        }
+
+        /* Love Page Styles */
+        .love-page {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            background: #000;
+        }
+
+        .love-title {
+            font-family: 'Courier New', monospace;
+            font-size: 4rem;
+            font-weight: bold;
+            letter-spacing: 1rem;
+            color: white;
+            text-align: center;
+            margin-bottom: 4rem;
+            text-shadow: 0 0 30px rgba(255,255,255,0.9), 0 0 60px rgba(255,255,255,0.5), 0 0 90px rgba(255,255,255,0.3);
+            position: relative;
+            z-index: 10;
+        }
+
+        .love-letter {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+            display: inline-block;
+        }
+
+        .love-letter.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .flower-container {
+            position: relative;
+            z-index: 10;
+        }
+
+        .flower-svg {
+            filter: drop-shadow(0 25px 50px rgba(0,0,0,0.5));
+        }
+
+        /* Flower animations */
+        .flower-element {
+            opacity: 0;
+            transform: scale(0);
+            transition: all 1s ease;
+        }
+
+        .flower-element.animate {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        /* Background stars for love page */
+        .star {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: white;
+            border-radius: 50%;
+            animation: starTwinkle 4s infinite;
+        }
+
+        @keyframes starTwinkle {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.5); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .letter {
+                font-size: 3rem;
+                margin: 0 0.125rem;
+            }
+            
+            .love-title {
+                font-size: 2.5rem;
+                letter-spacing: 0.5rem;
+            }
+            
+            .game-title {
+                font-size: 2rem;
+            }
+            
+            .message {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Landing Page -->
+    <div id="landing" class="page active landing-page">
+        <div class="background-particles" id="particles"></div>
+        
+        <div class="title-container">
+            <div class="title-line" id="happy-line">
+                <span class="letter">H</span>
+                <span class="letter">A</span>
+                <span class="letter">P</span>
+                <span class="letter">P</span>
+                <span class="letter">Y</span>
+            </div>
+            <div class="title-line" id="birthday-line">
+                <span class="letter">B</span>
+                <span class="letter">I</span>
+                <span class="letter">R</span>
+                <span class="letter">T</span>
+                <span class="letter">H</span>
+                <span class="letter">D</span>
+                <span class="letter">A</span>
+                <span class="letter">Y</span>
+            </div>
+        </div>
+
+        <p class="message">Wishing you a day filled with love and joy! 🎉 🎂</p>
+
+        <button class="open-button" onclick="startGame()">
+            <span class="sparkles-icon">✨</span>
+            Open
+        </button>
+    </div>
+
+    <!-- Heart Catching Game -->
+    <div id="game" class="page heart-game">
+        <div class="background-dots" id="gameDots"></div>
+        
+        <div class="game-ui">
+            <h1 class="game-title">Capture the hearts! ❤️</h1>
+            <p class="game-subtitle">You must capture 10 hearts to reach the next level.</p>
+            
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+            </div>
+            
+            <div class="hearts-counter">Hearts captured: <span id="heartsCount">0</span>/10</div>
+            
+            <div class="congratulations" id="congratulations">
+                <h2 class="congrats-title">Congratulations! ❤️ 🎉 Moving to the next level in <span id="countdown">3</span> seconds...</h2>
+                <div class="countdown-circle"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Love Page -->
+    <div id="love" class="page love-page">
+        <div class="background-particles" id="loveStars"></div>
+        
+        <div class="love-title" id="loveTitle">
+            <span class="love-letter">I</span>
+            <span class="love-letter"> </span>
+            <span class="love-letter">L</span>
+            <span class="love-letter">O</span>
+            <span class="love-letter">V</span>
+            <span class="love-letter">E</span>
+            <span class="love-letter"> </span>
+            <span class="love-letter">U</span>
+        </div>
+
+        <div class="flower-container">
+            <svg class="flower-svg" width="400" height="500" viewBox="0 0 400 500">
+                <!-- Left grass -->
+                <g class="flower-element grass-left">
+                    <path d="M50 450 Q45 400 40 350" stroke="#22c55e" stroke-width="3" fill="none" />
+                    <path d="M60 450 Q55 400 50 340" stroke="#16a34a" stroke-width="2" fill="none" />
+                    <path d="M70 450 Q75 400 80 360" stroke="#22c55e" stroke-width="3" fill="none" />
+                    <path d="M80 450 Q85 400 90 350" stroke="#15803d" stroke-width="2" fill="none" />
+                    <path d="M90 450 Q95 400 100 340" stroke="#22c55e" stroke-width="3" fill="none" />
+                </g>
+
+                <!-- Right grass -->
+                <g class="flower-element grass-right">
+                    <path d="M350 450 Q355 400 360 350" stroke="#22c55e" stroke-width="3" fill="none" />
+                    <path d="M340 450 Q345 400 350 340" stroke="#16a34a" stroke-width="2" fill="none" />
+                    <path d="M330 450 Q325 400 320 360" stroke="#22c55e" stroke-width="3" fill="none" />
+                    <path d="M320 450 Q315 400 310 350" stroke="#15803d" stroke-width="2" fill="none" />
+                    <path d="M310 450 Q305 400 300 340" stroke="#22c55e" stroke-width="3" fill="none" />
+                </g>
+
+                <!-- Base rosette leaves -->
+                <g class="flower-element base-leaves">
+                    <!-- Outer layer -->
+                    <ellipse cx="160" cy="420" rx="25" ry="15" fill="hsl(0, 0%, 30%)" transform="rotate(0 160 420)" />
+                    <ellipse cx="180" cy="400" rx="25" ry="15" fill="hsl(0, 0%, 40%)" transform="rotate(30 180 400)" />
+                    <ellipse cx="220" cy="400" rx="25" ry="15" fill="hsl(0, 0%, 30%)" transform="rotate(60 220 400)" />
+                    <ellipse cx="240" cy="420" rx="25" ry="15" fill="hsl(0, 0%, 40%)" transform="rotate(90 240 420)" />
+                    <ellipse cx="240" cy="440" rx="25" ry="15" fill="hsl(0, 0%, 30%)" transform="rotate(120 240 440)" />
+                    <ellipse cx="220" cy="460" rx="25" ry="15" fill="hsl(0, 0%, 40%)" transform="rotate(150 220 460)" />
+                    <ellipse cx="180" cy="460" rx="25" ry="15" fill="hsl(0, 0%, 30%)" transform="rotate(180 180 460)" />
+                    <ellipse cx="160" cy="440" rx="25" ry="15" fill="hsl(0, 0%, 40%)" transform="rotate(210 160 440)" />
+                    
+                    <!-- Inner layer -->
+                    <ellipse cx="175" cy="420" rx="20" ry="12" fill="hsl(0, 0%, 40%)" transform="rotate(0 175 420)" />
+                    <ellipse cx="200" cy="405" rx="20" ry="12" fill="hsl(0, 0%, 55%)" transform="rotate(45 200 405)" />
+                    <ellipse cx="225" cy="420" rx="20" ry="12" fill="hsl(0, 0%, 40%)" transform="rotate(90 225 420)" />
+                    <ellipse cx="225" cy="445" rx="20" ry="12" fill="hsl(0, 0%, 55%)" transform="rotate(135 225 445)" />
+                    <ellipse cx="200" cy="455" rx="20" ry="12" fill="hsl(0, 0%, 40%)" transform="rotate(180 200 455)" />
+                    <ellipse cx="175" cy="445" rx="20" ry="12" fill="hsl(0, 0%, 55%)" transform="rotate(225 175 445)" />
+                </g>
+
+                <!-- Flower stems -->
+                <path class="flower-element stem-left" d="M180 400 Q170 350 160 300 Q155 250 150 200" stroke="white" stroke-width="3" fill="none" />
+                <path class="flower-element stem-center" d="M200 400 Q200 350 200 300 Q200 250 200 180" stroke="white" stroke-width="4" fill="none" />
+                <path class="flower-element stem-right" d="M220 400 Q230 350 240 300 Q245 250 250 200" stroke="white" stroke-width="3" fill="none" />
+
+                <!-- Stem leaves -->
+                <g class="flower-element stem-leaves">
+                    <ellipse cx="170" cy="280" rx="8" ry="16" fill="#d1d5db" transform="rotate(-20 170 280)" />
+                    <ellipse cx="190" cy="300" rx="10" ry="18" fill="#e5e7eb" transform="rotate(15 190 300)" />
+                    <ellipse cx="230" cy="290" rx="8" ry="16" fill="#d1d5db" transform="rotate(25 230 290)" />
+                    <ellipse cx="210" cy="320" rx="9" ry="17" fill="#e5e7eb" transform="rotate(-10 210 320)" />
+                </g>
+
+                <!-- Left flower -->
+                <g class="flower-element flower-left">
+                    <ellipse cx="150" cy="200" rx="8" ry="20" fill="white" transform="rotate(0 150 200)" />
+                    <ellipse cx="150" cy="200" rx="8" ry="20" fill="white" transform="rotate(45 150 200)" />
+                    <ellipse cx="150" cy="200" rx="8" ry="20" fill="white" transform="rotate(90 150 200)" />
+                    <ellipse cx="150" cy="200" rx="8" ry="20" fill="white" transform="rotate(135 150 200)" />
+                    <ellipse cx="150" cy="200" rx="8" ry="20" fill="white" transform="rotate(180 150 200)" />
+                    <ellipse cx="150" cy="200" rx="8" ry="20" fill="white" transform="rotate(225 150 200)" />
+                    <ellipse cx="150" cy="200" rx="8" ry="20" fill="white" transform="rotate(270 150 200)" />
+                    <ellipse cx="150" cy="200" rx="8" ry="20" fill="white" transform="rotate(315 150 200)" />
+                    <circle cx="150" cy="200" r="8" fill="#fbbf24" />
+                    <circle cx="150" cy="200" r="4" fill="#f59e0b" />
+                </g>
+
+                <!-- Center flower -->
+                <g class="flower-element flower-center">
+                    <ellipse cx="200" cy="180" rx="10" ry="24" fill="white" transform="rotate(0 200 180)" />
+                    <ellipse cx="200" cy="180" rx="10" ry="24" fill="white" transform="rotate(45 200 180)" />
+                    <ellipse cx="200" cy="180" rx="10" ry="24" fill="white" transform="rotate(90 200 180)" />
+                    <ellipse cx="200" cy="180" rx="10" ry="24" fill="white" transform="rotate(135 200 180)" />
+                    <ellipse cx="200" cy="180" rx="10" ry="24" fill="white" transform="rotate(180 200 180)" />
+                    <ellipse cx="200" cy="180" rx="10" ry="24" fill="white" transform="rotate(225 200 180)" />
+                    <ellipse cx="200" cy="180" rx="10" ry="24" fill="white" transform="rotate(270 200 180)" />
+                    <ellipse cx="200" cy="180" rx="10" ry="24" fill="white" transform="rotate(315 200 180)" />
+                    <circle cx="200" cy="180" r="10" fill="#fbbf24" />
+                    <circle cx="200" cy="180" r="6" fill="#f59e0b" />
+                </g>
+
+                <!-- Right flower -->
+                <g class="flower-element flower-right">
+                    <ellipse cx="250" cy="200" rx="8" ry="20" fill="white" transform="rotate(0 250 200)" />
+                    <ellipse cx="250" cy="200" rx="8" ry="20" fill="white" transform="rotate(45 250 200)" />
+                    <ellipse cx="250" cy="200" rx="8" ry="20" fill="white" transform="rotate(90 250 200)" />
+                    <ellipse cx="250" cy="200" rx="8" ry="20" fill="white" transform="rotate(135 250 200)" />
+                    <ellipse cx="250" cy="200" rx="8" ry="20" fill="white" transform="rotate(180 250 200)" />
+                    <ellipse cx="250" cy="200" rx="8" ry="20" fill="white" transform="rotate(225 250 200)" />
+                    <ellipse cx="250" cy="200" rx="8" ry="20" fill="white" transform="rotate(270 250 200)" />
+                    <ellipse cx="250" cy="200" rx="8" ry="20" fill="white" transform="rotate(315 250 200)" />
+                    <circle cx="250" cy="200" r="8" fill="#fbbf24" />
+                    <circle cx="250" cy="200" r="4" fill="#f59e0b" />
+                </g>
+            </svg>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentPage = 'landing';
+        let capturedHearts = 0;
+        let hearts = [];
+        let nextHeartId = 1;
+        let gameRunning = false;
+        let allIntervals = [];
+        let allTimeouts = [];
+        let heartAnimationFrame;
+
+        // Helper functions to track intervals and timeouts
+        function setTrackedInterval(callback, delay) {
+            const id = setInterval(callback, delay);
+            allIntervals.push(id);
+            return id;
+        }
+
+        function setTrackedTimeout(callback, delay) {
+            const id = setTimeout(callback, delay);
+            allTimeouts.push(id);
+            return id;
+        }
+
+        function clearAllIntervals() {
+            allIntervals.forEach(id => clearInterval(id));
+            allIntervals = [];
+        }
+
+        function clearAllTimeouts() {
+            allTimeouts.forEach(id => clearTimeout(id));
+            allTimeouts = [];
+        }
+
+        function clearAllAnimations() {
+            if (heartAnimationFrame) {
+                cancelAnimationFrame(heartAnimationFrame);
+                heartAnimationFrame = null;
+            }
+        }
+
+        function removeAllHearts() {
+            document.querySelectorAll('.heart').forEach(heart => heart.remove());
+            hearts = [];
+        }
+
+        // Initialize the website
+        function init() {
+            createBackgroundParticles();
+            startLandingAnimations();
+        }
+
+        // Create background particles for landing page
+        function createBackgroundParticles() {
+            const container = document.getElementById('particles');
+            container.innerHTML = '';
+            for (let i = 0; i < 20; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 2 + 's';
+                container.appendChild(particle);
+            }
+        }
+
+        // Start landing page animations
+        function startLandingAnimations() {
+            const happyLetters = document.querySelectorAll('#happy-line .letter');
+            const birthdayLetters = document.querySelectorAll('#birthday-line .letter');
+            
+            let happyIndex = 0;
+            let birthdayIndex = 0;
+
+            // Animate HAPPY line
+            setTrackedInterval(() => {
+                if (currentPage !== 'landing') return;
+                
+                happyLetters.forEach((letter, index) => {
+                    letter.classList.remove('lit', 'dimming', 'next');
+                    if (index === happyIndex) {
+                        letter.classList.add('lit');
+                    } else if (index === (happyIndex - 1 + happyLetters.length) % happyLetters.length) {
+                        letter.classList.add('dimming');
+                    } else if (index === (happyIndex + 1) % happyLetters.length) {
+                        letter.classList.add('next');
+                    }
+                });
+                happyIndex = (happyIndex + 1) % happyLetters.length;
+            }, 300);
+
+            // Animate BIRTHDAY line
+            setTrackedInterval(() => {
+                if (currentPage !== 'landing') return;
+                
+                birthdayLetters.forEach((letter, index) => {
+                    letter.classList.remove('lit', 'dimming', 'next');
+                    if (index === birthdayIndex) {
+                        letter.classList.add('lit');
+                    } else if (index === (birthdayIndex - 1 + birthdayLetters.length) % birthdayLetters.length) {
+                        letter.classList.add('dimming');
+                    } else if (index === (birthdayIndex + 1) % birthdayLetters.length) {
+                        letter.classList.add('next');
+                    }
+                });
+                birthdayIndex = (birthdayIndex + 1) % birthdayLetters.length;
+            }, 200);
+        }
+
+        // Start the heart catching game
+        function startGame() {
+            showPage('game');
+            initGame();
+        }
+
+        // Initialize heart catching game
+        function initGame() {
+            capturedHearts = 0;
+            nextHeartId = 1;
+            gameRunning = true;
+            
+            // Reset congratulations
+            document.getElementById('congratulations').classList.remove('show');
+            
+            updateProgress();
+            createGameDots();
+            startHeartSpawning();
+            startHeartAnimation();
+        }
+
+        // Create background dots for game
+        function createGameDots() {
+            const container = document.getElementById('gameDots');
+            container.innerHTML = '';
+            for (let i = 0; i < 50; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'dot';
+                dot.style.left = Math.random() * 100 + '%';
+                dot.style.top = Math.random() * 100 + '%';
+                container.appendChild(dot);
+            }
+        }
+
+        // Start spawning hearts
+        function startHeartSpawning() {
+            // Primary spawner
+            setTrackedInterval(() => {
+                if (!gameRunning || capturedHearts >= 10 || currentPage !== 'game') return;
+                
+                const numHearts = 2 + Math.floor(Math.random() * 3);
+                for (let i = 0; i < numHearts; i++) {
+                    createHeart();
+                }
+            }, 800);
+
+            // Secondary spawner
+            setTrackedInterval(() => {
+                if (!gameRunning || capturedHearts >= 10 || currentPage !== 'game') return;
+                
+                const numHearts = 1 + Math.floor(Math.random() * 2);
+                for (let i = 0; i < numHearts; i++) {
+                    createHeart();
+                }
+            }, 500);
+        }
+
+        // Create a falling heart
+        function createHeart() {
+            if (currentPage !== 'game' || !gameRunning) return;
+            
+            const heart = {
+                id: nextHeartId++,
+                x: Math.random() * (window.innerWidth - 60),
+                y: -50,
+                speed: 8 + Math.random() * 12,
+                element: null
+            };
+
+            const heartElement = document.createElement('div');
+            heartElement.className = 'heart';
+            heartElement.innerHTML = '❤️';
+            heartElement.style.left = heart.x + 'px';
+            heartElement.style.top = heart.y + 'px';
+            
+            heartElement.addEventListener('mouseenter', () => {
+                if (currentPage === 'game' && gameRunning) {
+                    captureHeart(heart.id);
+                }
+            });
+            
+            heart.element = heartElement;
+            hearts.push(heart);
+            document.getElementById('game').appendChild(heartElement);
+        }
+
+        // Animate falling hearts
+        function startHeartAnimation() {
+            const animateHearts = () => {
+                if (!gameRunning || currentPage !== 'game') return;
+                
+                hearts = hearts.filter(heart => {
+                    if (!heart.element.parentNode) return false;
+                    
+                    heart.y += heart.speed;
+                    heart.element.style.top = heart.y + 'px';
+                    
+                    if (heart.y > window.innerHeight + 50) {
+                        heart.element.remove();
+                        return false;
+                    }
+                    return true;
+                });
+                
+                if (gameRunning && currentPage === 'game') {
+                    heartAnimationFrame = requestAnimationFrame(animateHearts);
+                }
+            };
+            
+            animateHearts();
+        }
+
+        // Capture a heart
+        function captureHeart(heartId) {
+            if (currentPage !== 'game' || !gameRunning) return;
+            
+            const heartIndex = hearts.findIndex(h => h.id === heartId);
+            if (heartIndex === -1) return;
+            
+            const heart = hearts[heartIndex];
+            heart.element.remove();
+            hearts.splice(heartIndex, 1);
+            
+            capturedHearts++;
+            updateProgress();
+            
+            if (capturedHearts >= 10) {
+                endGame();
+            }
+        }
+
+        // Update progress bar
+        function updateProgress() {
+            const progress = Math.min((capturedHearts / 10) * 100, 100);
+            document.getElementById('progressFill').style.width = progress + '%';
+            document.getElementById('heartsCount').textContent = capturedHearts;
+        }
+
+        // End the game and start countdown
+        function endGame() {
+            gameRunning = false;
+            clearAllAnimations();
+            removeAllHearts();
+            
+            // Show congratulations
+            const congratsElement = document.getElementById('congratulations');
+            congratsElement.classList.add('show');
+            
+            // Start countdown
+            let countdown = 3;
+            const countdownElement = document.getElementById('countdown');
+            
+            const countdownInterval = setInterval(() => {
+                countdown--;
+                countdownElement.textContent = countdown;
+                
+                if (countdown <= 0) {
+                    clearInterval(countdownInterval);
+                    showLovePage();
+                }
+            }, 1000);
+        }
+
+        // Show love page
+        function showLovePage() {
+            showPage('love');
+            initLovePage();
+        }
+
+        // Initialize love page
+        function initLovePage() {
+            createLoveStars();
+            animateLoveText();
+            animateFlowers();
+        }
+
+        // Create background stars for love page
+        function createLoveStars() {
+            const container = document.getElementById('loveStars');
+            container.innerHTML = '';
+            for (let i = 0; i < 40; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.animationDelay = Math.random() * 2 + 's';
+                container.appendChild(star);
+            }
+        }
+
+        // Animate love text letters
+        function animateLoveText() {
+            const letters = document.querySelectorAll('.love-letter');
+            // Reset letters
+            letters.forEach(letter => letter.classList.remove('show'));
+            
+            letters.forEach((letter, index) => {
+                setTrackedTimeout(() => {
+                    if (currentPage === 'love') {
+                        letter.classList.add('show');
+                    }
+                }, index * 800);
+            });
+        }
+
+        // Animate flowers
+        function animateFlowers() {
+            const elements = document.querySelectorAll('.flower-element');
+            
+            // Reset flower elements
+            elements.forEach(element => element.classList.remove('animate'));
+            
+            elements.forEach((element, index) => {
+                setTrackedTimeout(() => {
+                    if (currentPage === 'love') {
+                        element.classList.add('animate');
+                    }
+                }, index * 500 + 1000);
+            });
+        }
+
+        // Show specific page
+        function showPage(pageId) {
+            // Complete cleanup
+            clearAllIntervals();
+            clearAllTimeouts();
+            clearAllAnimations();
+            removeAllHearts();
+            gameRunning = false;
+            
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            // Show the requested page
+            document.getElementById(pageId).classList.add('active');
+            currentPage = pageId;
+            
+            // Start appropriate animations for the new page
+            if (pageId === 'landing') {
+                createBackgroundParticles();
+                startLandingAnimations();
+            }
+        }
+
+        // Initialize the website when page loads
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>
